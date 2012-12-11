@@ -30,7 +30,7 @@
 #include "ros/ros.h"
 #include "geometry_msgs/QuaternionStamped.h"
 #include "tf/transform_broadcaster.h"
-
+#include "tf/transform_listener.h"
 /**
  * This tutorial demonstrates simple receipt of messages over the ROS system.
  */
@@ -39,10 +39,18 @@ void chatterCallback(const geometry_msgs::QuaternionStamped::ConstPtr& msg)
 {
 
   static tf::TransformBroadcaster br;
+  static tf::TransformListener ls;
   tf::Transform transform;
-  transform.setOrigin(tf::Vector3(0.0,0.0,0.0));
-  transform.setRotation(tf::Quaternion(msg->quaternion.x,msg->quaternion.y,msg->quaternion.z,msg->quaternion.w));
-  br.sendTransform(tf::StampedTransform(transform, msg->header.stamp,"root", msg->header.frame_id));
+  tf::Transform head_transform;
+  try
+  {
+	ls.waitForTransform("neck_1","head_1",ros::Time(0),ros::Duration(1.0));
+	ls.lookupTransform("neck_1","head_1",ros::Time(0),head_transform);
+  }
+
+  //transform.setOrigin(tf::Vector3(0.0,0.0,0.0));
+  head_transform.setRotation(tf::Quaternion(msg->quaternion.x,msg->quaternion.y,msg->quaternion.z,msg->quaternion.w));
+  br.sendTransform(tf::StampedTransform(head_transform, ros::Time::now(),head_transform.header.frame_id, "imu_head"));
   ROS_INFO("I heard: [%f %f %f %f]", msg->quaternion.x, msg->quaternion.y, msg->quaternion.z, msg->quaternion.w);
 }
 // %EndTag(CALLBACK)%
