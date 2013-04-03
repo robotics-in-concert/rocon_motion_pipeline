@@ -41,16 +41,21 @@ void chatterCallback(const geometry_msgs::QuaternionStamped::ConstPtr& msg)
   static tf::TransformBroadcaster br;
   static tf::TransformListener ls;
   tf::Transform transform;
-  tf::Transform head_transform;
+  tf::StampedTransform head_transform;
   try
   {
 	ls.waitForTransform("neck_1","head_1",ros::Time(0),ros::Duration(1.0));
 	ls.lookupTransform("neck_1","head_1",ros::Time(0),head_transform);
   }
-
+  catch (tf::TransformException const &ex)
+  {
+    ROS_DEBUG_STREAM(ex.what());
+    ROS_WARN_STREAM("Couldn't get neck to head transform!");
+    return;
+  }
   //transform.setOrigin(tf::Vector3(0.0,0.0,0.0));
   head_transform.setRotation(tf::Quaternion(msg->quaternion.x,msg->quaternion.y,msg->quaternion.z,msg->quaternion.w));
-  br.sendTransform(tf::StampedTransform(head_transform, ros::Time::now(),head_transform.header.frame_id, "imu_head"));
+  br.sendTransform(tf::StampedTransform(head_transform, ros::Time::now(),head_transform.frame_id_, "imu_head"));
   ROS_INFO("I heard: [%f %f %f %f]", msg->quaternion.x, msg->quaternion.y, msg->quaternion.z, msg->quaternion.w);
 }
 // %EndTag(CALLBACK)%
