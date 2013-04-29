@@ -1,118 +1,146 @@
-/*
- * Copyright (C) 2008, Morgan Quigley and Willow Garage, Inc.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *   * Redistributions of source code must retain the above copyright notice,
- *     this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *   * Neither the names of Stanford University or Willow Garage, Inc. nor
- *     the names of its contributors may be used to endorse or promote 
- *     products derived from this software without specific prior written 
- *     permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
+#include <ros/ros.h>
+#include <geometry_msgs/QuaternionStamped.h>
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
+#include "cereal_port/CerealPort.h"
 
-// %Tag(FULLTEXT)%
-#include "ros/ros.h"
-#include "geometry_msgs/QuaternionStamped.h"
-#include "tf/transform_broadcaster.h"
-#include "tf/transform_listener.h"
-/**
- * This tutorial demonstrates simple receipt of messages over the ROS system.
- */
-// %Tag(CALLBACK)%
-void chatterCallback(const geometry_msgs::QuaternionStamped::ConstPtr& msg)
+#define REPLY_SIZE 30
+#define TIMEOUT 20
+
+// This example opens the serial port and sends a request 'R' at 1Hz and waits for a reply.
+int main(int argc, char** argv)
 {
+    ros::init(argc, argv, "imu_tf_publisher");
+    ros::NodeHandle n;
 
-  static tf::TransformBroadcaster br;
-  static tf::TransformListener ls;
-  tf::Transform transform;
-  tf::StampedTransform head_transform;
-  try
-  {
-	ls.waitForTransform("neck_1","head_1",ros::Time(0),ros::Duration(1.0));
-	ls.lookupTransform("neck_1","head_1",ros::Time(0),head_transform);
-  }
-  catch (tf::TransformException const &ex)
-  {
-    ROS_DEBUG_STREAM(ex.what());
-    ROS_WARN_STREAM("Couldn't get neck to head transform!");
-    return;
-  }
-  //transform.setOrigin(tf::Vector3(0.0,0.0,0.0));
-  head_transform.setRotation(tf::Quaternion(msg->quaternion.x,msg->quaternion.y,msg->quaternion.z,msg->quaternion.w));
-  br.sendTransform(tf::StampedTransform(head_transform, ros::Time::now(),head_transform.frame_id_, "imu_head"));
-  ROS_INFO("I heard: [%f %f %f %f]", msg->quaternion.x, msg->quaternion.y, msg->quaternion.z, msg->quaternion.w);
+    cereal::CerealPort device;
+    char reply[REPLY_SIZE];
+    char* tempData;
+    int read_len = 0;
+    int data_counter = 0;
+    double imu_x, imu_y, imu_z, imu_w = 0.0;
+    char* head_ID = "4-2";
+    char* right_hand_ID = "6-1";
+    char* left_hand_ID = "6-3";
+
+    // Change the next line according to your port name and baud rate
+    try{ device.open("/dev/ttyUSB0", 115200); }
+    catch(cereal::Exception& e)
+    {
+        ROS_FATAL("Failed to open the serial port!!!");
+        ROS_BREAK();
+    }
+    ROS_INFO("The serial port is opened.");
+
+    ros::Rate r(500);
+
+    tf::TransformBroadcaster br;
+    tf::TransformListener ls;
+    std::string transformString1;
+    std::string transformString2;
+    tf::StampedTransform stamped_transform;
+
+    while(ros::ok())
+    {
+        // Send 'R' over the serial port
+        //device.write("3");
+
+        // Get the reply, the last value is the timeout in ms
+        try{ read_len = device.read(reply, REPLY_SIZE, TIMEOUT); }
+        catch(cereal::TimeoutException& e)
+        {
+            ROS_ERROR(e.what());
+	    device.open("/dev/ttyUSB0", 115200); 
+        }
+	if(read_len > 0)
+	{
+	    tempData = strtok(reply, ",");
+	    data_counter = 0;
+	    if(tempData = strtok(NULL, ","))
+	    {
+		data_counter++;
+		imu_x = (double)atoi(tempData)/10000.0;
+	    }
+	    if(tempData = strtok(NULL, ","))
+	    {
+		data_counter++;
+		imu_y = (double)atoi(tempData)/10000.0;
+	    }
+	    if(tempData = strtok(NULL, ","))
+	    {
+		data_counter++;
+		imu_z = (double)atoi(tempData)/10000.0;
+	    }
+	    if(tempData = strtok(NULL, ","))
+	    {
+		data_counter++;
+		imu_w = (double)atoi(tempData)/10000.0;
+	    }	    
+
+	    if(data_counter == 4 && strncmp(reply, head_ID, 3)==0)
+	    {
+		  transformString1 = "neck";
+		  transformString2 = "head";
+		  try
+		  {
+			ls.waitForTransform(transformString1,transformString2,ros::Time(0),ros::Duration(1.0));
+			ls.lookupTransform(transformString1,transformString2,ros::Time(0),stamped_transform);
+		  }
+		  catch(tf::TransformException const &ex)
+		  {
+			ROS_DEBUG_STREAM(ex.what());
+    			ROS_WARN_STREAM("Couldn't get neck to head transform!");
+		  }
+
+		  stamped_transform.setRotation(tf::Quaternion(imu_x,imu_y,imu_z,imu_w));
+		  br.sendTransform(tf::StampedTransform(stamped_transform, ros::Time::now(),stamped_transform.frame_id_,"imu_head"));
+            	  ROS_INFO("Got this reply for head:   x : %f ,y : %f ,z : %f ,w : %f", imu_x, imu_y, imu_z, imu_w);
+
+	    }
+	    else if(data_counter == 4 && strncmp(reply, right_hand_ID, 3)==0)
+	    {
+              transformString1 = "right_elbow";
+              transformString2 = "right_hand";
+              try
+              {
+                    ls.waitForTransform(transformString1,transformString2,ros::Time(0),ros::Duration(1.0));
+                    ls.lookupTransform(transformString1,transformString2,ros::Time(0),stamped_transform);
+              }
+              catch(tf::TransformException const &ex)
+              {
+                    ROS_DEBUG_STREAM(ex.what());
+                    ROS_WARN_STREAM("Couldn't get right elbow to right hand transform!");
+              }
+
+              stamped_transform.setRotation(tf::Quaternion(imu_x,imu_y,imu_z,imu_w));
+              br.sendTransform(tf::StampedTransform(stamped_transform, ros::Time::now(),stamped_transform.frame_id_,"imu_right_hand"));
+              ROS_INFO("Got this reply for right hand: x : %f ,y : %f ,z : %f ,w : %f", imu_x, imu_y, imu_z, imu_w);
+	    }
+	    else if(data_counter == 4 && strncmp(reply, left_hand_ID, 3)==0)
+	    {
+              transformString1 = "left_elbow";
+              transformString2 = "left_hand";
+              try
+              {
+                    ls.waitForTransform(transformString1,transformString2,ros::Time(0),ros::Duration(1.0));
+                    ls.lookupTransform(transformString1,transformString2,ros::Time(0),stamped_transform);
+              }
+              catch(tf::TransformException const &ex)
+              {
+                    ROS_DEBUG_STREAM(ex.what());
+                    ROS_WARN_STREAM("Couldn't get left elbow to left hand transform!");
+              }
+
+              //transform.setOrigin(tf::Vector3(0.0,0.0,0.0));
+              stamped_transform.setRotation(tf::Quaternion(imu_x,imu_y,imu_z,imu_w));
+              br.sendTransform(tf::StampedTransform(stamped_transform, ros::Time::now(),stamped_transform.frame_id_,"imu_left_hand"));
+              ROS_INFO("Got this reply for left hand:  x : %f ,y : %f ,z : %f ,w : %f", imu_x, imu_y, imu_z, imu_w);
+	    }	    
+	    
+            read_len = 0;	    	
+	}
+
+        ros::spinOnce();
+        r.sleep();
+    }   
 }
-// %EndTag(CALLBACK)%
-
-int main(int argc, char **argv)
-{
-  /**
-   * The ros::init() function needs to see argc and argv so that it can
-   * perform any ROS arguments and name remapping that were provided
-   * at the command line. For programmatic remappings you can use a
-   * different version of init() which takes remappings directly, but
-   * for most command-line programs, passing argc and argv is the easiest
-   * way to do it.  The third argument to init() is the name of the node.
-   *
-   * You must call one of the versions of ros::init() before using any other
-   * part of the ROS system.
-   */
-  ros::init(argc, argv, "listener");
-
-  /**
-   * NodeHandle is the main access point to communications with the
-   * ROS system. The first NodeHandle constructed will fully initialize
-   * this node, and the last NodeHandle destructed will close down the node.
-   */
-  ros::NodeHandle n;
-
-  /**
-   * The subscribe() call is how you tell ROS that you want to receive
-   * messages on a given topic.  This invokes a call to the ROS master
-   * node, which keeps a registry of who is publishing and who is subscribing.
-   * Messages are passed to a callback function, here called chatterCallback.  
-   * subscribe() returns a Subscriber object that you must hold on to
-   * until you want to unsubscribe. When all copies of the Subscriber
-   * object go out of scope, this callback will automatically be
-   * unsubscribed from this topic.
-   *
-   * The second parameter to the subscribe() function is the size of
-   * the message queue.  If messages are arriving faster than they are
-   * being processed, this is the number of messages that will be
-   * buffered up before beginning to throw away the oldest ones.
-   */
-// %Tag(SUBSCRIBER)%
-  ros::Subscriber sub = n.subscribe("chatter", 1000, chatterCallback);
-// %EndTag(SUBSCRIBER)%
-
-   ROS_INFO("IMU_Linster!!!!!");
-
-  /**
-   * ros::spin() will enter a loop, pumping callbacks.  With this
-   * version, all callbacks will be called from within this thread
-   * (the main one).  ros::spin() will exit when Ctrl-C is pressed,
-   * or the node is shutdown by the master.
-   */
-// %Tag(SPIN)%
-  ros::spin();
-// %EndTag(SPIN)%
-
-  return 0;
-}
-// %EndTag(FULLTEXT)%
