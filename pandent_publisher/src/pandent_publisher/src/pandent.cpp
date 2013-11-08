@@ -28,7 +28,7 @@ int main(int argc, char** argv){
   tf::TransformBroadcaster broadcaster;
   ros::Rate loop_rate(200);
   // Change the next line according to your port name and baud rate
-  try{ device.open("/dev/ttyUSB0", 9600); }
+  try{ device.open("/dev/ttyUSB0", 19200); }
   catch(cereal::Exception& e)
   {
       ROS_FATAL("Failed to open the serial port!!!");
@@ -226,8 +226,8 @@ int main(int argc, char** argv){
 	    }
 	       //update joint_state
 	       joint_state.header.stamp = ros::Time::now();
-	       joint_state.name.resize(18);
-	       joint_state.position.resize(18);
+	       joint_state.name.resize(19);
+	       joint_state.position.resize(19);
 	       joint_state.name[0] ="base_to_right_shoulder";
 	       joint_state.position[0] = pendant_r1;
 	       joint_state.name[1] ="base_to_left_shoulder";
@@ -264,6 +264,8 @@ int main(int argc, char** argv){
 	       joint_state.position[16] = pendant_r17;
 	       joint_state.name[17] ="left_ankle_roll";
 	       joint_state.position[17] = pendant_l18;
+	       joint_state.name[18] ="base_to_head";
+	       joint_state.position[18] = 0.0;
 	       //send the joint state and transform
                joint_pub.publish(joint_state);
 	}

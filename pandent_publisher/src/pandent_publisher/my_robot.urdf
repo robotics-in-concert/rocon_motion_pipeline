@@ -11,6 +11,24 @@
       </geometry>
     </visual>
   </link>
+  <link name="head">
+    <visual>
+      <geometry>
+        <box size="0.06 0.06 0.04"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0.0 0 0.05"/>
+      <material name="yellow">
+      <color rgba=".8 .8 0 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="base_to_head" type="revolute">
+    <parent link="base_link"/>
+    <child link="head"/>
+    <origin rpy="0 0 0" xyz="0.0 0 0.05"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-3.14" upper="3.14" velocity="0.5"/>
+  </joint>
   <link name="right_shoulder">
     <visual>
       <geometry>
