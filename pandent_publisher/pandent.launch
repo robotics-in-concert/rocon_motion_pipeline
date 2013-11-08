@@ -1,0 +1,7 @@
+<launch>
+        <param name="robot_description" command="cat $(find pandent_publisher)/my_robot.urdf" />
+
+	<node name="pandent_publisher" pkg="pandent_publisher" type="pandent" output="screen"/> 
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen"/>
+
+</launch>

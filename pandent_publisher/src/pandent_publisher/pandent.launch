@@ -1,0 +1,4 @@
+<launch>
+        <param name="robot_description" command="cat $(find pandent_publisher)/my_robot.xml" />
+        <node name="state_publisher" pkg="pandent_publisher" type="state_publisher" />
+</launch>
