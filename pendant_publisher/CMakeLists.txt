@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(pandent_publisher)
+project(pendant_publisher)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -81,7 +81,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES pandent_pulisher
+#  LIBRARIES pendant_pulisher
 #  CATKIN_DEPENDS sensor_msgs tf urdf
 #  DEPENDS system_lib
 )
@@ -99,19 +99,19 @@ include_directories(
 )
 
 ## Declare a cpp library
-# add_library(pandent_pulisher
-#   src/${PROJECT_NAME}/pandent_pulisher.cpp
+# add_library(pendant_pulisher
+#   src/${PROJECT_NAME}/pendant_pulisher.cpp
 # )
 
 ## Declare a cpp executable
-# add_executable(pandent_pulisher_node src/pandent_pulisher_node.cpp)
+# add_executable(pendant_pulisher_node src/pendant_pulisher_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(pandent_pulisher_node pandent_pulisher_generate_messages_cpp)
+# add_dependencies(pendant_pulisher_node pendant_pulisher_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(pandent_pulisher_node
+# target_link_libraries(pendant_pulisher_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -130,7 +130,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS pandent_pulisher pandent_pulisher_node
+# install(TARGETS pendant_pulisher pendant_pulisher_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -155,7 +155,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_pandent_pulisher.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_pendant_pulisher.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
@@ -163,7 +163,7 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 add_library(cereal_port  src/CerealPort.cpp)
-add_executable(pandent src/pandent.cpp) 
+add_executable(pendant src/pendant.cpp) 
 
-target_link_libraries(pandent cereal_port ${catkin_LIBRARIES}) 
+target_link_libraries(pendant cereal_port ${catkin_LIBRARIES}) 
 

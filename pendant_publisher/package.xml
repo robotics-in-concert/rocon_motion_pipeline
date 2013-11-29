@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>pandent_publisher</name>
+  <name>pendant_publisher</name>
   <version>0.0.0</version>
-  <description>The pandent_pulisher package</description>
+  <description>The pendant_pulisher package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://ros.org/wiki/pandent_pulisher</url> -->
+  <!-- <url type="website">http://ros.org/wiki/pendant_pulisher</url> -->
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->

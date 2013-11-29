@@ -1,0 +1,8 @@
+<launch>
+	<group ns="pendant">
+	        <param name="robot_description" command="cat $(find pendant_publisher)/urdf/pendant.urdf" />
+		<node name="pendant_publisher" pkg="pendant_publisher" type="pandent" output="screen"/>
+		<node name="pendant_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen"/>
+		<!-- remap from="robot_description" to="pendant/robot_description"/ -->
+	</group>
+</launch>

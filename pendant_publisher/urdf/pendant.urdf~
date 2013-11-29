@@ -4,14 +4,7 @@
 <!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
 <!-- =================================================================================== -->
 <robot name="awesome-o" xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <link name="base_link">
-    <visual>
-      <geometry>
-        <box size="0.11 0.05 0.12"/>
-      </geometry>
-    </visual>
-  </link>
-  <link name="head">
+  <link name="robot_head_link">
     <visual>
       <geometry>
         <box size="0.06 0.06 0.04"/>
@@ -22,68 +15,26 @@
       </material>
     </visual>
   </link>
-  <joint name="base_to_head" type="revolute">
-    <parent link="base_link"/>
-    <child link="head"/>
+  <joint name="head" type="fixed">
+    <parent link="torso_link"/>
+    <child link="robot_head_link"/>
     <origin rpy="0 0 0" xyz="0.0 0 0.05"/>
-    <axis xyz="0 0 1"/>
-    <limit effort="1000.0" lower="-3.14" upper="3.14" velocity="0.5"/>
   </joint>
-  <link name="right_shoulder">
+  <link name="torso_link">
     <visual>
       <geometry>
-        <box size="0.03 0.04 0.03"/>
+        <box size="0.11 0.05 0.12"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0.0 0 0.00"/>
-      <material name="blue">
-        <color rgba="0 0 .8 1"/>
-      </material>
     </visual>
   </link>
-  <joint name="base_to_right_shoulder" type="revolute">
-    <parent link="base_link"/>
-    <child link="right_shoulder"/>
+  <joint name="right_shoulder" type="revolute">
+    <parent link="torso_link"/>
+    <child link="right_shoulder_link"/>
     <origin rpy="1.5 0 0" xyz="0.07 0 0.03"/>
     <axis xyz="1 0 0"/>
     <limit effort="1000.0" lower="-3.14" upper="3.14" velocity="0.5"/>
   </joint>
-  <link name="right_upper_arm">
-    <visual>
-      <geometry>
-        <!--mesh filename="file:///home/local/AX12.dae" scale="0.0001 0.0001 0.0001"/-->
-        <box size="0.03 0.04 0.09"/>
-      </geometry>
-      <material name="green">
-        <color rgba="0 .8 0 1"/>
-      </material>
-      <origin rpy="0 0 0" xyz="0.00 0 -0.045"/>
-    </visual>
-  </link>
-  <joint name="right_shoulder_to_upper" type="revolute">
-    <parent link="right_shoulder"/>
-    <child link="right_upper_arm"/>
-    <origin rpy="0 -1.5 0" xyz="0.00 0 0.0"/>
-    <axis xyz="0 -1 0"/>
-    <limit effort="1000.0" lower="-3.14" upper="3.14" velocity="0.5"/>
-  </joint>
-  <link name="right_forearm">
-    <visual>
-      <geometry>
-        <!--mesh filename="file:///home/local/AX12.dae" scale="0.0001 0.0001 0.0001"/-->
-        <box size="0.03 0.04 0.09"/>
-      </geometry>
-      <material name="blue"/>
-      <origin rpy="0 0 0" xyz="0.00 0 -0.045"/>
-    </visual>
-  </link>
-  <joint name="right_elbow" type="revolute">
-    <parent link="right_upper_arm"/>
-    <child link="right_forearm"/>
-    <origin rpy="0 0 0" xyz="0.00 0 -0.08"/>
-    <axis xyz="0 -1 0"/>
-    <limit effort="1000.0" lower="-3.14" upper="3.14" velocity="0.5"/>
-  </joint>
-  <link name="left_shoulder">
+  <link name="right_shoulder_link">
     <visual>
       <geometry>
         <box size="0.03 0.04 0.03"/>
@@ -94,14 +45,14 @@
       </material>
     </visual>
   </link>
-  <joint name="base_to_left_shoulder" type="revolute">
-    <parent link="base_link"/>
-    <child link="left_shoulder"/>
-    <origin rpy="1.5 0 0" xyz="-0.07 0 0.03"/>
-    <axis xyz="-1 0 0"/>
+  <joint name="right_shoulder_to_upper" type="revolute">
+    <parent link="right_shoulder_link"/>
+    <child link="right_upper_arm_link"/>
+    <origin rpy="0 -1.5 0" xyz="0.00 0 0.0"/>
+    <axis xyz="0 -1 0"/>
     <limit effort="1000.0" lower="-3.14" upper="3.14" velocity="0.5"/>
   </joint>
-  <link name="left_upper_arm">
+  <link name="right_upper_arm_link">
     <visual>
       <geometry>
         <!--mesh filename="file:///home/local/AX12.dae" scale="0.0001 0.0001 0.0001"/-->
@@ -113,14 +64,14 @@
       <origin rpy="0 0 0" xyz="0.00 0 -0.045"/>
     </visual>
   </link>
-  <joint name="left_shoulder_to_upper" type="revolute">
-    <parent link="left_shoulder"/>
-    <child link="left_upper_arm"/>
-    <origin rpy="0 1.5 0" xyz="0.00 0 0.0"/>
+  <joint name="right_elbow" type="revolute">
+    <parent link="right_upper_arm_link"/>
+    <child link="right_forearm_link"/>
+    <origin rpy="0 0 0" xyz="0.00 0 -0.08"/>
     <axis xyz="0 -1 0"/>
     <limit effort="1000.0" lower="-3.14" upper="3.14" velocity="0.5"/>
   </joint>
-  <link name="left_forearm">
+  <link name="right_forearm_link">
     <visual>
       <geometry>
         <!--mesh filename="file:///home/local/AX12.dae" scale="0.0001 0.0001 0.0001"/-->
@@ -130,13 +81,74 @@
       <origin rpy="0 0 0" xyz="0.00 0 -0.045"/>
     </visual>
   </link>
+  <joint name="right_hand" type="fixed">
+    <parent link="right_forearm_link"/>
+    <child link="right_hand_link"/>
+    <origin rpy="0 0 0" xyz="0.0 0 -0.09"/>
+  </joint>
+  <link name="right_hand_link"/>
+
+  <joint name="left_shoulder" type="revolute">
+    <parent link="torso_link"/>
+    <child link="left_shoulder_link"/>
+    <origin rpy="1.5 0 0" xyz="-0.07 0 0.03"/>
+    <axis xyz="-1 0 0"/>
+    <limit effort="1000.0" lower="-3.14" upper="3.14" velocity="0.5"/>
+  </joint>
+  <link name="left_shoulder_link">
+    <visual>
+      <geometry>
+        <box size="0.03 0.04 0.03"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0.0 0 0.00"/>
+      <material name="blue">
+        <color rgba="0 0 .8 1"/>
+      </material>
+    </visual>
+  </link>
+  <joint name="left_shoulder_to_upper" type="revolute">
+    <parent link="left_shoulder_link"/>
+    <child link="left_upper_arm_link"/>
+    <origin rpy="0 1.5 0" xyz="0.00 0 0.0"/>
+    <axis xyz="0 -1 0"/>
+    <limit effort="1000.0" lower="-3.14" upper="3.14" velocity="0.5"/>
+  </joint>
+  <link name="left_upper_arm_link">
+    <visual>
+      <geometry>
+        <!--mesh filename="file:///home/local/AX12.dae" scale="0.0001 0.0001 0.0001"/-->
+        <box size="0.03 0.04 0.09"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0 .8 0 1"/>
+      </material>
+      <origin rpy="0 0 0" xyz="0.00 0 -0.045"/>
+    </visual>
+  </link>
   <joint name="left_elbow" type="revolute">
-    <parent link="left_upper_arm"/>
-    <child link="left_forearm"/>
+    <parent link="left_upper_arm_link"/>
+    <child link="left_forearm_link"/>
     <origin rpy="0 0 0" xyz="0.00 0 -0.08"/>
     <axis xyz="0 -1 0"/>
     <limit effort="1000.0" lower="-3.14" upper="3.14" velocity="0.5"/>
   </joint>
+  <link name="left_forearm_link">
+    <visual>
+      <geometry>
+        <!--mesh filename="file:///home/local/AX12.dae" scale="0.0001 0.0001 0.0001"/-->
+        <box size="0.03 0.04 0.09"/>
+      </geometry>
+      <material name="blue"/>
+      <origin rpy="0 0 0" xyz="0.00 0 -0.045"/>
+    </visual>
+  </link>
+  <joint name="left_hand" type="fixed">
+    <parent link="left_forearm_link"/>
+    <child link="left_hand_link"/>
+    <origin rpy="0 0 0" xyz="0.0 0 -0.09"/>
+  </joint>
+  <link name="left_hand_link"/>
+
   <link name="right_hip">
     <visual>
       <geometry>
@@ -149,7 +161,7 @@
     </visual>
   </link>
   <joint name="base_to_right_hip" type="revolute">
-    <parent link="base_link"/>
+    <parent link="torso_link"/>
     <child link="right_hip"/>
     <origin rpy="0 0 -0.7" xyz="0.03 0 -0.06"/>
     <axis xyz="0 0 -1"/>
@@ -250,7 +262,7 @@
     </visual>
   </link>
   <joint name="base_to_left_hip" type="revolute">
-    <parent link="base_link"/>
+    <parent link="torso_link"/>
     <child link="left_hip"/>
     <origin rpy="0 0 0.7" xyz="-0.03 0 -0.06"/>
     <axis xyz="0 0 -1"/>
