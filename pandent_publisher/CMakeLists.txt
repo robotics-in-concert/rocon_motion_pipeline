@@ -162,8 +162,8 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-add_library(cereal_port  src/CerealPort.cpp)
+add_library(cereal_port_pandent  src/CerealPort.cpp)
 add_executable(pandent src/pandent.cpp) 
 
-target_link_libraries(pandent cereal_port ${catkin_LIBRARIES}) 
+target_link_libraries(pandent cereal_port_pandent ${catkin_LIBRARIES}) 
 
